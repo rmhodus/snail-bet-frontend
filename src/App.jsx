@@ -12,14 +12,27 @@ export default function App() {
   const [bet, setBet] = useState(null);
   const [winner, setWinner] = useState(null);
 
-  const startRace = () => {
+  // ВОТ ОНА - СВЯЗЬ С ТВОИМ БЭКЕНДОМ AWS EC2
+  const startRace = async () => {
     setIsRacing(true);
     setWinner(null);
-    // Имитация запроса на бэкенд для фиксации ставки и получения результата
-    setTimeout(() => {
+    
+    try {
+      // Стучимся на твой сервер по публичному IP
+      const response = await fetch('http://3.227.254.169:8000/api/race/');
+      
+      // Превращаем ответ сервера в понятный для JS объект
+      const data = await response.json();
+      
+      // Останавливаем анимацию и назначаем победителя, которого прислал Django
       setIsRacing(false);
-      setWinner(snails[1].name); // В реальном проекте победителя отдает бэкенд
-    }, 4000);
+      setWinner(data.winner); 
+    } catch (error) {
+      // Если сервер упал или недоступен, покажем ошибку
+      console.error("Ошибка сети:", error);
+      setIsRacing(false);
+      setWinner("Ошибка связи с сервером");
+    }
   };
 
   return (
